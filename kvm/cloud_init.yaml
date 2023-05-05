@@ -1,0 +1,30 @@
+## template: jinja
+#cloud-config
+ssh_pwauth: true
+
+users:
+  - default
+  - name: rdma
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+chpasswd:
+  expire: false
+  users:
+    - name: root
+      password: linux
+      type: text
+    - name: rdma
+      password: rdma
+      type: text
+
+packages:
+  - libfabric
+  - libibverbs-utils
+  - kernel-modules-{{v1.kernel_release}}
+
+runcmd:
+  - depmod
+  # This actually needs to happen on each boot
+  - modprobe rdma_rxe
+  - rdma link add rxe0 type rxe netdev eth0
