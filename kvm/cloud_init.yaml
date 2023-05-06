@@ -20,11 +20,18 @@ chpasswd:
 
 packages:
   - libfabric
+  - qperf
   - libibverbs-utils
+  - librdmacm-utils # For rping
   - kernel-modules-{{v1.kernel_release}}
+
+# Most of this config actually needs to happen on each boot
+bootcmd:
+  - ip link set dev eth0 addrgenmode eui64
+  - ip link set dev eth0 down
+  - ip link set dev eth0 up
 
 runcmd:
   - depmod
-  # This actually needs to happen on each boot
   - modprobe rdma_rxe
   - rdma link add rxe0 type rxe netdev eth0

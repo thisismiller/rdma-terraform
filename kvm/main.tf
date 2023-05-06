@@ -5,7 +5,9 @@ resource "libvirt_pool" "benchmark" {
 }
 
 resource "libvirt_volume" "fedora38-qcow2" {
-  name   = "fedora38.qcow2"
+  count = 2
+
+  name   = "fedora38-${count.index}.qcow2"
   pool   = libvirt_pool.benchmark.name
   source = "./images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2"
   format = "qcow2"
@@ -41,18 +43,20 @@ resource "libvirt_network" "benchmark" {
 
 # Define KVM domain to create
 resource "libvirt_domain" "fedora38" {
-  name   = "fedora38"
+  count = 2
+
+  name   = "fedora38-${count.index}"
   memory = "2048"
   vcpu   = 1
 
   network_interface {
     network_id = libvirt_network.benchmark.id
-    hostname = "virt1"
+    hostname = "virt${count.index}"
     wait_for_lease = true
   }
 
   disk {
-    volume_id = libvirt_volume.fedora38-qcow2.id
+    volume_id = "${element(libvirt_volume.fedora38-qcow2.*.id, count.index)}"
   }
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
@@ -76,6 +80,12 @@ resource "libvirt_domain" "fedora38" {
 }
 
 # Output Server IP
-output "ip" {
-  value = libvirt_domain.fedora38.network_interface.0.addresses.0
+output "ips" {
+  value = libvirt_domain.fedora38.*.network_interface.0.addresses.0
+}
+output "ip0" {
+  value = libvirt_domain.fedora38.0.network_interface.0.addresses.0
+}
+output "ip1" {
+  value = libvirt_domain.fedora38.1.network_interface.0.addresses.0
 }
