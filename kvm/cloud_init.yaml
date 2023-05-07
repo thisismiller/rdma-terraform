@@ -19,11 +19,23 @@ chpasswd:
       type: text
 
 packages:
+  - kernel-modules-{{v1.kernel_release}}
   - libfabric
+  # RDMA benchmarking utilities
   - qperf
   - libibverbs-utils
-  - librdmacm-utils # For rping
-  - kernel-modules-{{v1.kernel_release}}
+  - librdmacm-utils
+  - perftest
+
+write_files:
+- content: |
+    * hard memlock unlimited
+    * soft memlock unlimited
+    * hard stack 1024000
+    * soft stack 1024000
+    * hard nofile 1024000
+    * soft nofile 1024000
+  path: /etc/security/limits.d/99-rdma.conf
 
 # Most of this config actually needs to happen on each boot
 bootcmd:
