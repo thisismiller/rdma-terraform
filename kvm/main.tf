@@ -49,6 +49,10 @@ resource "libvirt_domain" "fedora38" {
   memory = "2048"
   vcpu   = 1
 
+  cpu {
+    mode = "host-passthrough"
+  }
+
   network_interface {
     network_id = libvirt_network.benchmark.id
     hostname = "virt${count.index}"
